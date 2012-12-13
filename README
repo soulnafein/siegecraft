@@ -1,0 +1,2 @@
+To start the game in chrome you must use the -allow-file-access-from-files parameter.
+That's due to single origin policies.
