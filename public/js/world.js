@@ -4,9 +4,9 @@ var Siegecraft = Siegecraft || {};
   var proto = Siegecraft.World.prototype;
 
   proto.init = function() {
-    this.width = 50;
-    this.depth = 50;
-    this.height = 20;
+    this.width = 20;
+    this.depth = 20;
+    this.height = 10;
     this.halfWidth = this.width / 2
     this.halfDepth = this.depth / 2
   };
@@ -50,27 +50,24 @@ var Siegecraft = Siegecraft || {};
       var type = response[i+3].charCodeAt();
 
       dummy.position.x = x * 100 - this.halfWidth * 100;
-      dummy.position.y = h * 100;
+      dummy.position.y = h * 100 - this.height*100;
       dummy.position.z = z * 100 - this.halfDepth * 100;
 
 
       dummy.geometry = pyGeometry;
       THREE.GeometryUtils.merge( geometry, dummy );
 
-      if (type>0) {
-        dummy.geometry = pxGeometry;
-        THREE.GeometryUtils.merge( geometry, dummy );
+      dummy.geometry = pxGeometry;
+      THREE.GeometryUtils.merge( geometry, dummy );
 
-        dummy.geometry = nxGeometry;
-        THREE.GeometryUtils.merge( geometry, dummy );
+      dummy.geometry = nxGeometry;
+      THREE.GeometryUtils.merge( geometry, dummy );
 
-        dummy.geometry = pzGeometry;
-        THREE.GeometryUtils.merge( geometry, dummy );
+      dummy.geometry = pzGeometry;
+      THREE.GeometryUtils.merge( geometry, dummy );
 
-        dummy.geometry = nzGeometry;
-        THREE.GeometryUtils.merge( geometry, dummy );
-      }
-
+      dummy.geometry = nzGeometry;
+      THREE.GeometryUtils.merge( geometry, dummy );
     }
 
     var textureGrass = THREE.ImageUtils.loadTexture( 'textures/grass.png' );
