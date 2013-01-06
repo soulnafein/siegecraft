@@ -4,16 +4,14 @@ var Siegecraft = Siegecraft || {};
   var proto = Siegecraft.World.prototype;
 
   proto.init = function() {
-    this.width = 128;
-    this.depth = 128;
+    this.width = 50;
+    this.depth = 50;
+    this.height = 20;
     this.halfWidth = this.width / 2
     this.halfDepth = this.depth / 2
   };
 
   proto.generate = function() {
-    this.data = generateHeight( this.width, this.depth );
-
-
     var pxGeometry = new THREE.PlaneGeometry( 100, 100 );
     pxGeometry.faces[ 0 ].materialIndex = 1;
     pxGeometry.applyMatrix( new THREE.Matrix4().makeRotationY( Math.PI / 2 ) );
@@ -43,52 +41,34 @@ var Siegecraft = Siegecraft || {};
     var geometry = new THREE.Geometry();
     var dummy = new THREE.Mesh();
 
-    for ( var z = 0; z < this.depth; z ++ ) {
+    var response = JSON.parse($.ajax({url: 'http://localhost:5000/world.json', async: false, dataType: 'json'}).response)[0];
+    
+    for(var i=0; i<response.length; i+=4) {
+      var x = response[i].charCodeAt();
+      var h = response[i+1].charCodeAt();
+      var z = response[i+2].charCodeAt();
+      var type = response[i+3].charCodeAt();
 
-      for ( var x = 0; x < this.width; x ++ ) {
+      dummy.position.x = x * 100 - this.halfWidth * 100;
+      dummy.position.y = h * 100;
+      dummy.position.z = z * 100 - this.halfDepth * 100;
 
-        var h = this.getY( x, z );
 
-        dummy.position.x = x * 100 - this.halfWidth * 100;
-        dummy.position.y = h * 100;
-        dummy.position.z = z * 100 - this.halfDepth * 100;
+      dummy.geometry = pyGeometry;
+      THREE.GeometryUtils.merge( geometry, dummy );
 
-        var px = this.getY( x + 1, z );
-        var nx = this.getY( x - 1, z );
-        var pz = this.getY( x, z + 1 );
-        var nz = this.getY( x, z - 1 );
-
-        dummy.geometry = pyGeometry;
+      if (type>0) {
+        dummy.geometry = pxGeometry;
         THREE.GeometryUtils.merge( geometry, dummy );
 
-        if ( ( px != h && px != h + 1 ) || x == 0 ) {
+        dummy.geometry = nxGeometry;
+        THREE.GeometryUtils.merge( geometry, dummy );
 
-          dummy.geometry = pxGeometry;
-          THREE.GeometryUtils.merge( geometry, dummy );
+        dummy.geometry = pzGeometry;
+        THREE.GeometryUtils.merge( geometry, dummy );
 
-        }
-
-        if ( ( nx != h && nx != h + 1 ) || x == this.width - 1 ) {
-
-          dummy.geometry = nxGeometry;
-          THREE.GeometryUtils.merge( geometry, dummy );
-
-        }
-
-        if ( ( pz != h && pz != h + 1 ) || z == this.depth - 1 ) {
-
-          dummy.geometry = pzGeometry;
-          THREE.GeometryUtils.merge( geometry, dummy );
-
-        }
-
-        if ( ( nz != h && nz != h + 1 ) || z == 0 ) {
-
-          dummy.geometry = nzGeometry;
-          THREE.GeometryUtils.merge( geometry, dummy );
-
-        }
-
+        dummy.geometry = nzGeometry;
+        THREE.GeometryUtils.merge( geometry, dummy );
       }
 
     }
@@ -110,26 +90,4 @@ var Siegecraft = Siegecraft || {};
   proto.addToScene = function( scene ) {
     scene.add( this.mesh );
   };
-
-  proto.getY = function( x, z ) {
-    return ( this.data[ x + z * this.width ] * 0.2 ) | 0;
-  };
-
-  function generateHeight( width, height ) {
-    var data = [], perlin = new ImprovedNoise(),
-    size = width * height, quality = 2, z = Math.random() * 100;
-
-    for ( var j = 0; j < 4; j ++ ) {
-      if ( j == 0 ) for ( var i = 0; i < size; i ++ ) data[ i ] = 0;
-
-      for ( var i = 0; i < size; i ++ ) {
-        var x = i % width, y = ( i / width ) | 0;
-        data[ i ] += perlin.noise( x / quality, y / quality, z ) * quality;
-      }
-
-      quality *= 4
-    }
-
-    return data;
-  }
 }())
